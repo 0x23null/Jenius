@@ -1,8 +1,11 @@
 package controller;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import com.google.genai.types.Content;
+import com.google.genai.types.FunctionCall;
+import com.google.genai.types.GenerateContentResponse;
+import com.google.genai.types.Part;
+import java.util.Map;
 import java.text.Normalizer;
 import model.GenAIModel;
 import view.ConsoleView;
@@ -40,69 +43,56 @@ public class JeniusController {
         try {
             String normalized = normalize(input).toLowerCase();
 
-            if (normalized.startsWith("tom tat ")) {
-                String filePath = input.substring(7).trim();
-                processFileSummary(filePath);
-            } else if (normalized.startsWith("tao cau hoi ")) {
-                String topicOrFile = input.substring(11).trim();
-                processQuestions(topicOrFile);
-            } else if (normalized.equals("show-history")) {
-                // Show history
-                // Display history in a more readable format, not just the raw model history
+            if (normalized.equals("show-history")) {
                 view.displayHistory(model.history.getMessages());
-            } else {
-                String concept = input.trim();
-                if (!concept.isEmpty()) {
-                    // Add user message to history
-                    model.history.addMessage("User", concept);
-                    String response = model.explainConcept(concept);
-                    // Add AI response to history
-                    model.history.addMessage("Jenius", response);
-                    view.displayResponse(response);
+                return;
+            }
 
-                } else {
-                    view.displayError("Please provide a concept to explain");
+            model.history.addMessage("User", input);
+            GenerateContentResponse response = model.generateResponse(input);
+
+            if (response.automaticFunctionCallingHistory().isPresent()) {
+                for (Content c : response.automaticFunctionCallingHistory().get()) {
+                    if (c.parts().isPresent()) {
+                        for (Part p : c.parts().get()) {
+                            if (p.functionCall().isPresent()) {
+                                FunctionCall fc = p.functionCall().get();
+                                String name = fc.name().orElse("");
+                                String arg = fc.args().orElse(Map.of()).values().stream()
+                                        .findFirst()
+                                        .map(Object::toString)
+                                        .orElse("");
+                                String result = executeFunction(name, arg);
+                                if (result != null) {
+                                    model.history.addMessage("Jenius", result);
+                                    view.displayResponse(result);
+                                    return;
+                                }
+                            }
+                        }
+                    }
                 }
             }
+
+            String text = response.text();
+            model.history.addMessage("Jenius", text);
+            view.displayResponse(text);
         } catch (Exception e) {
             view.displayError("Error processing command: " + e.getMessage());
         }
     }
 
-    private void processFileSummary(String filePath) {
-        try {
-            String content = Files.readString(Paths.get(filePath));
-            // Add user message to history
-            model.history.addMessage("User", "summarize " + filePath);
-            String summary = model.summarizeContent(content);
-            // Add AI response to history
-            model.history.addMessage("Jenius", summary);
-            view.displayResponse(summary);
-        } catch (IOException e) {
-            view.displayError("Error reading file: " + e.getMessage());
+    private String executeFunction(String name, String arg) {
+        switch (name) {
+            case "summarizeFile":
+                return model.summarizeFile(arg);
+            case "generateQuestions":
+                return model.generateQuestions(arg);
+            default:
+                return null;
         }
     }
 
-    private void processQuestions(String topicOrFile) {
-        try {
-            // Add user message to history
-            model.history.addMessage("User", "questions " + topicOrFile);
-            if (Files.exists(Paths.get(topicOrFile))) {
-                String content = Files.readString(Paths.get(topicOrFile));
-                String questions = model.generateQuestions(content);
-                // Add AI response to history
-                model.history.addMessage("Jenius", questions);
-                view.displayResponse(questions);
-            } else {
-                String questions = model.generateQuestions(topicOrFile);
-                // Add AI response to history
-                model.history.addMessage("Jenius", questions);
-                view.displayResponse(questions);
-            }
-        } catch (IOException e) {
-            view.displayError("Error processing questions: " + e.getMessage());
-        }
-    }
 
     private static String normalize(String s) {
         if (s == null) {
