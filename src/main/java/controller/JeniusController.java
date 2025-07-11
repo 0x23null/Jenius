@@ -3,6 +3,7 @@ package controller;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.Normalizer;
 import model.GenAIModel;
 import view.ConsoleView;
 
@@ -25,8 +26,9 @@ public class JeniusController {
 
         while (true) {
             String input = view.getUserInput().trim();
+            String normalized = normalize(input).toLowerCase();
 
-            if (input.equalsIgnoreCase("exit") || input.equalsIgnoreCase("quit")) {
+            if (normalized.equals("exit") || normalized.equals("quit")) {
                 break;
             }
 
@@ -36,13 +38,15 @@ public class JeniusController {
 
     private void processCommand(String input) {
         try {
-            if (input.toLowerCase().startsWith("tóm tắt ")) {
+            String normalized = normalize(input).toLowerCase();
+
+            if (normalized.startsWith("tom tat ")) {
                 String filePath = input.substring(7).trim();
                 processFileSummary(filePath);
-            } else if (input.startsWith("tạo câu hỏi ")) {
+            } else if (normalized.startsWith("tao cau hoi ")) {
                 String topicOrFile = input.substring(11).trim();
                 processQuestions(topicOrFile);
-            } else if (input.equalsIgnoreCase("show-history")) {
+            } else if (normalized.equals("show-history")) {
                 // Show history
                 // Display history in a more readable format, not just the raw model history
                 view.displayHistory(model.history.getMessages());
@@ -98,6 +102,14 @@ public class JeniusController {
         } catch (IOException e) {
             view.displayError("Error processing questions: " + e.getMessage());
         }
+    }
+
+    private static String normalize(String s) {
+        if (s == null) {
+            return "";
+        }
+        return Normalizer.normalize(s, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "");
     }
 
     public static void main(String[] args) {
