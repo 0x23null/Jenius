@@ -1,8 +1,8 @@
 package view;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Scanner;
+import model.Message;
 
 public class ConsoleView {
     private final Scanner scanner;
@@ -36,10 +36,10 @@ public class ConsoleView {
         System.out.println("\nError: " + error + "\n");
     }
 
-    public void displayHistory(List<Map<String, String>> history) {
+    public void displayHistory(List<Message> history) {
         System.out.println("\n--- Conversation History ---");
-        for (Map<String, String> message : history) {
-            System.out.println(message.get("role") + ": " + message.get("content"));
+        for (Message message : history) {
+            System.out.println(message.getRole() + ": " + message.getContent());
         }
         System.out.println("----------------------------\n");
     }

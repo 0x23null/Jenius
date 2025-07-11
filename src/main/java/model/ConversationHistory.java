@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 public class ConversationHistory {
-    private List<Map<String, String>> messages;
+    private List<Message> messages;
     private static final String INSTRUCTION = """
         [ROLE] You are Jenius, a wise and friendly AI assistant, specializing in answering questions and supporting learning in the field of information technology.
         [RULES]
@@ -32,18 +32,18 @@ public class ConversationHistory {
         Map<String, String> message = new HashMap<>();
         message.put("role", role);
         message.put("content", content);
-        messages.add(message);
+        messages.add(new Message(role, content));
     }
 
     public String getHistoryForModel() {
         StringBuilder historyBuilder = new StringBuilder(INSTRUCTION);
-        for (Map<String, String> message : messages) {
-            historyBuilder.append(message.get("role")).append(": ").append(message.get("content")).append("\n");
+        for (Message message : messages) {
+            historyBuilder.append(message.getRole()).append(": ").append(message.getContent()).append("\n");
         }
         return historyBuilder.toString();
     }
 
-    public List<Map<String, String>> getMessages() {
+    public List<Message> getMessages() {
         return new ArrayList<>(messages);
     }
 
