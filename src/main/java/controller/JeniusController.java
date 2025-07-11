@@ -7,6 +7,8 @@ import com.google.genai.types.GenerateContentResponse;
 import com.google.genai.types.Part;
 import java.util.Map;
 import java.text.Normalizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import model.GenAIModel;
 import view.ConsoleView;
 
@@ -103,6 +105,7 @@ public class JeniusController {
     }
 
     public static void main(String[] args) {
+        Logger.getLogger("com.google.genai").setLevel(Level.SEVERE);
         try {
             JeniusController controller = new JeniusController();
             controller.start();

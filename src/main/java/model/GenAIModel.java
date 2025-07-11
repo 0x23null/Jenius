@@ -1,7 +1,6 @@
 package model;
 
 import com.google.genai.Client;
-import com.google.genai.types.AutomaticFunctionCallingConfig;
 import com.google.genai.types.Candidate;
 import com.google.genai.types.Content;
 import com.google.genai.types.GenerateContentConfig;
@@ -14,6 +13,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 public class GenAIModel {
+
     private final Client client;
     public final ConversationHistory history;
     private static GenAIModel activeModel;
@@ -30,12 +30,12 @@ public class GenAIModel {
 
     public String summarizeContent(String content) {
         String prompt = "Summarize the following content in 100-150 words:\n" + content;
-        return generateResponse(prompt).text();
+        return generateTaskResponse(prompt).text();
     }
 
     public String generateQuestions(String input) {
         String prompt = "Generate 5 multiple-choice questions based on " + input + " with 4 answer options each.";
-        return generateResponse(prompt).text();
+        return generateTaskResponse(prompt).text();
     }
 
     public String summarizeFile(String path) {
@@ -83,13 +83,25 @@ public class GenAIModel {
 
             GenerateContentConfig config = GenerateContentConfig.builder()
                     .tools(List.of(tool))
-                    .automaticFunctionCalling(
-                            AutomaticFunctionCallingConfig.builder()
-                                    .disable(true)
-                                    .build())
                     .build();
 
             return client.models.generateContent("gemini-2.0-flash-001", fullPrompt, config);
+        } catch (Exception e) {
+            return GenerateContentResponse.builder()
+                    .candidates(List.of(
+                            Candidate.builder()
+                                    .content(Content.builder()
+                                            .parts(List.of(Part.fromText("Error generating response: " + e.getMessage())))
+                                            .build())
+                                    .build()))
+                    .build();
+        }
+    }
+
+    private GenerateContentResponse generateTaskResponse(String promptForTask) {
+        try {
+            GenerateContentConfig config = GenerateContentConfig.builder().build();
+            return client.models.generateContent("gemini-2.0-flash-001", promptForTask, config);
         } catch (Exception e) {
             return GenerateContentResponse.builder()
                     .candidates(List.of(
@@ -106,4 +118,3 @@ public class GenAIModel {
         return history;
     }
 }
-
