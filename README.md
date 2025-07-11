@@ -10,6 +10,10 @@ Before running the application, set the environment variable `GENAI_API_KEY` wit
 set GENAI_API_KEY=your_api_key_here
 ```
 
+Hoặc thay thẳng API key vào class controller
+
+String apiKey = "paste_api_key";
+
 Run the application using Maven:
 
 ```bash
