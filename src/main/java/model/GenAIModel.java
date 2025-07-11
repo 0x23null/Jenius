@@ -4,7 +4,6 @@ import com.google.genai.Client;
 import com.google.genai.types.AutomaticFunctionCallingConfig;
 import com.google.genai.types.Candidate;
 import com.google.genai.types.Content;
-import com.google.genai.types.FunctionDeclaration;
 import com.google.genai.types.GenerateContentConfig;
 import com.google.genai.types.GenerateContentResponse;
 import com.google.genai.types.Part;
@@ -17,10 +16,12 @@ import java.util.List;
 public class GenAIModel {
     private final Client client;
     public final ConversationHistory history;
+    private static GenAIModel activeModel;
 
     public GenAIModel(String apiKey) {
         this.client = Client.builder().apiKey(apiKey).build();
         this.history = new ConversationHistory();
+        activeModel = this;
     }
 
     public String explainConcept(String concept) {
@@ -46,14 +47,37 @@ public class GenAIModel {
         }
     }
 
+    /**
+     * Static wrapper for summarizeFile that delegates to the active model
+     * instance. This allows function calls to be registered using static
+     * methods while still executing on the current model.
+     */
+    public static String summarizeFileStatic(String path) {
+        if (activeModel == null) {
+            throw new IllegalStateException("No active GenAIModel instance");
+        }
+        return activeModel.summarizeFile(path);
+    }
+
+    /**
+     * Static wrapper for generateQuestions that delegates to the active model
+     * instance.
+     */
+    public static String generateQuestionsStatic(String input) {
+        if (activeModel == null) {
+            throw new IllegalStateException("No active GenAIModel instance");
+        }
+        return activeModel.generateQuestions(input);
+    }
+
     public GenerateContentResponse generateResponse(String currentPrompt) {
         try {
             String fullPrompt = history.getHistoryForModel() + currentPrompt;
 
             Tool tool = Tool.builder()
                     .functions(List.of(
-                            GenAIModel.class.getMethod("summarizeFile", String.class),
-                            GenAIModel.class.getMethod("generateQuestions", String.class)
+                            GenAIModel.class.getMethod("summarizeFileStatic", String.class),
+                            GenAIModel.class.getMethod("generateQuestionsStatic", String.class)
                     ))
                     .build();
 
