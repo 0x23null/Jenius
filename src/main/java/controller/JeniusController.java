@@ -18,7 +18,7 @@ public class JeniusController {
     private final ConsoleView view;
 
     public JeniusController() throws IOException {
-        String apiKey = "AIzaSyCSeJkWCGwwX-BABEMS7yYpkVSZMBqhJ-U";
+        String apiKey = System.getenv("GENAI_API_KEY");
         if (apiKey == null || apiKey.isEmpty()) {
             throw new IllegalStateException("GENAI_API_KEY environment variable is not set");
         }
