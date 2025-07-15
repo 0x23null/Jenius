@@ -11,22 +11,16 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.stream.Collectors;
-
-// memory handling
-import java.util.Optional;
 
 public class GenAIModel {
 
     private final Client client;
     public final ConversationHistory history;
-    private final MemoryManager memory;
     private static GenAIModel activeModel;
 
     public GenAIModel(String apiKey) {
         this.client = Client.builder().apiKey(apiKey).build();
         this.history = new ConversationHistory();
-        this.memory = new MemoryManager();
         activeModel = this;
     }
 
@@ -39,11 +33,10 @@ public class GenAIModel {
         return generateTaskResponse(prompt).text();
     }
 
-    public String createQuiz(String context, int questionCount) {
-        String prompt = "Create " + questionCount + " multiple-choice questions based on the following text:\n" + context;
+    public String generateQuestions(String input) {
+        String prompt = "Generate 5 multiple-choice questions based on " + input + " with 4 answer options each.";
         return generateTaskResponse(prompt).text();
     }
-
 
     public String summarizeFile(String path) {
         try {
@@ -51,29 +44,6 @@ public class GenAIModel {
             return summarizeContent(content);
         } catch (IOException e) {
             return "Error reading file: " + e.getMessage();
-        }
-    }
-
-    public String saveToMemory(String fact) {
-        memory.saveFact(fact);
-        return proactiveAnalysis();
-    }
-
-    public String proactiveAnalysis() {
-        String joined = memory.getFacts().stream().collect(Collectors.joining("\n"));
-        String prompt = "You are a research analyst AI. Find non-obvious connections between these facts about the user and explain them succinctly:\n" + joined;
-        return generateTaskResponse(prompt).text();
-    }
-
-    public String extractImportantFact(String message) {
-        String prompt = "From the following user statement, extract a short factual snippet that would help you understand the user better. If nothing new is learned, just return an empty string.\n" + message;
-        return generateTaskResponse(prompt).text().trim();
-    }
-
-    public void saveImplicitFactFromMessage(String message) {
-        String fact = extractImportantFact(message);
-        if (fact != null && !fact.isBlank()) {
-            saveToMemory(fact);
         }
     }
 
@@ -89,30 +59,16 @@ public class GenAIModel {
         return activeModel.summarizeFile(path);
     }
 
-    /** Static wrapper for createQuiz */
-    public static String createQuizStatic(String context, int questionCount) {
+    /**
+     * Static wrapper for generateQuestions that delegates to the active model
+     * instance.
+     */
+    public static String generateQuestionsStatic(String input) {
         if (activeModel == null) {
             throw new IllegalStateException("No active GenAIModel instance");
         }
-        return activeModel.createQuiz(context, questionCount);
+        return activeModel.generateQuestions(input);
     }
-
-    /** Static wrapper for saveToMemory */
-    public static String saveToMemoryStatic(String fact) {
-        if (activeModel == null) {
-            throw new IllegalStateException("No active GenAIModel instance");
-        }
-        return activeModel.saveToMemory(fact);
-    }
-
-    /** Static wrapper for proactiveAnalysis */
-    public static String proactiveAnalysisStatic() {
-        if (activeModel == null) {
-            throw new IllegalStateException("No active GenAIModel instance");
-        }
-        return activeModel.proactiveAnalysis();
-    }
-
 
     public GenerateContentResponse generateResponse(String currentPrompt) {
         try {
@@ -121,9 +77,7 @@ public class GenAIModel {
             Tool tool = Tool.builder()
                     .functions(List.of(
                             GenAIModel.class.getMethod("summarizeFileStatic", String.class),
-                            GenAIModel.class.getMethod("createQuizStatic", String.class, int.class),
-                            GenAIModel.class.getMethod("saveToMemoryStatic", String.class),
-                            GenAIModel.class.getMethod("proactiveAnalysisStatic")
+                            GenAIModel.class.getMethod("generateQuestionsStatic", String.class)
                     ))
                     .build();
 

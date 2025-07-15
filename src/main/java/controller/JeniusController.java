@@ -6,8 +6,6 @@ import com.google.genai.types.FunctionCall;
 import com.google.genai.types.GenerateContentResponse;
 import com.google.genai.types.Part;
 import java.util.Map;
-import java.util.List;
-import java.util.ArrayList;
 import java.text.Normalizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -52,76 +50,46 @@ public class JeniusController {
                 return;
             }
 
-            // explicit memory commands
-            if (normalized.startsWith("remember this for me") || normalized.startsWith("this is important")) {
-                String fact = input.substring(input.indexOf(" ") + 1).replaceFirst("(?i)remember this for me", "").replaceFirst("(?i)this is important", "").replaceFirst(":" , "").trim();
-                String analysis = model.saveToMemory(fact);
-                model.history.addMessage("User", input);
-                model.history.addMessage("Jenius", analysis);
-                view.displayResponse(analysis);
-                return;
-            }
-
-            model.saveImplicitFactFromMessage(input);
             model.history.addMessage("User", input);
+            GenerateContentResponse response = model.generateResponse(input);
 
-            String next = input;
-            while (true) {
-                GenerateContentResponse response = model.generateResponse(next);
-                next = null;
-
-                if (response.automaticFunctionCallingHistory().isPresent()) {
-                    boolean executed = false;
-                    for (Content c : response.automaticFunctionCallingHistory().get()) {
-                        if (c.parts().isPresent()) {
-                            for (Part p : c.parts().get()) {
-                                if (p.functionCall().isPresent()) {
-                                    FunctionCall fc = p.functionCall().get();
-                                    String name = fc.name().orElse("");
-                                    Map<String, Object> args = fc.args().orElse(Map.of());
-                                    String result = executeFunction(name, args);
-                                    if (result != null) {
-                                        executed = true;
-                                        model.history.addMessage("Jenius", result);
-                                        next = result;
-                                    }
+            if (response.automaticFunctionCallingHistory().isPresent()) {
+                for (Content c : response.automaticFunctionCallingHistory().get()) {
+                    if (c.parts().isPresent()) {
+                        for (Part p : c.parts().get()) {
+                            if (p.functionCall().isPresent()) {
+                                FunctionCall fc = p.functionCall().get();
+                                String name = fc.name().orElse("");
+                                String arg = fc.args().orElse(Map.of()).values().stream()
+                                        .findFirst()
+                                        .map(Object::toString)
+                                        .orElse("");
+                                String result = executeFunction(name, arg);
+                                if (result != null) {
+                                    model.history.addMessage("Jenius", result);
+                                    view.displayResponse(result);
+                                    return;
                                 }
                             }
                         }
                     }
-                    if (executed) {
-                        continue;
-                    }
                 }
-
-                String text = response.text();
-                model.history.addMessage("Jenius", text);
-                view.displayResponse(text);
-                break;
             }
+
+            String text = response.text();
+            model.history.addMessage("Jenius", text);
+            view.displayResponse(text);
         } catch (Exception e) {
             view.displayError("Error processing command: " + e.getMessage());
         }
     }
 
-    private String executeFunction(String name, Map<String, Object> args) {
+    private String executeFunction(String name, String arg) {
         switch (name) {
-            case "summarizeFile": {
-                String path = args.values().stream().findFirst().map(Object::toString).orElse("");
-                return model.summarizeFile(path);
-            }
-            case "createQuiz": {
-                List<Object> vals = new ArrayList<>(args.values());
-                String ctx = vals.size() > 0 ? vals.get(0).toString() : "";
-                int count = vals.size() > 1 ? Integer.parseInt(vals.get(1).toString()) : 5;
-                return model.createQuiz(ctx, count);
-            }
-            case "saveToMemory": {
-                String fact = args.values().stream().findFirst().map(Object::toString).orElse("");
-                return model.saveToMemory(fact);
-            }
-            case "proactiveAnalysis":
-                return model.proactiveAnalysis();
+            case "summarizeFile":
+                return model.summarizeFile(arg);
+            case "generateQuestions":
+                return model.generateQuestions(arg);
             default:
                 return null;
         }
