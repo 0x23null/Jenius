@@ -23,11 +23,10 @@ mvn exec:java
 ## Notes Management
 
 Notes are stored in `notes.json` in the project directory so they persist
-between runs. Use the following commands inside the application:
+between runs. Only one command is required:
 
-- `add-note <title> <content>` – create a new note.
 - `list-notes` – display all notes with their IDs.
-- `delete-note <id>` – remove a note by ID.
-- `summarize-note <id>` – summarize the note's content with AI.
-- `questions-note <id>` – generate questions from the note.
-- `search-notes <query>` – find notes that match the query.
+
+For adding, deleting, searching or summarizing notes, simply ask Jenius in
+natural language and the assistant will use its built-in functions to manage
+the notes for you.

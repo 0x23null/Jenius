@@ -17,8 +17,9 @@ public class ConversationHistory {
         Ensure all responses do not include the prefix ‘Jenius:’.
 
         [TOOL USAGE]
-        You have access to functions to summarize files and generate questions.
-        If a user's request can be fulfilled by a function (e.g., they mention a file path or ask to summarize), you MUST use that function.
+        You have access to functions to manage notes (add, delete, summarize, search),
+        as well as to summarize files and generate questions.
+        If a user's request can be fulfilled by a function (for example they ask to add a note or summarize content), you MUST use that function.
         Prioritize using a function over giving a conversational answer for tasks that match a tool's capability.
         
         Below is the chat history:\n""";

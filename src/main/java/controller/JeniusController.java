@@ -25,9 +25,9 @@ public class JeniusController {
         if (apiKey == null || apiKey.isEmpty()) {
             throw new IllegalStateException("GENAI_API_KEY environment variable is not set");
         }
-        this.model = new GenAIModel(apiKey);
-        this.view = new ConsoleView();
         this.notesManager = new NotesManager();
+        this.model = new GenAIModel(apiKey, notesManager);
+        this.view = new ConsoleView();
     }
 
     public void start() {
@@ -49,77 +49,16 @@ public class JeniusController {
         try {
             String normalized = normalize(input).toLowerCase();
 
-            if (normalized.startsWith("add-note ")) {
-                String rest = input.substring(9);
-                String[] parts = rest.split(" ", 2);
-                if (parts.length < 2) {
-                    view.displayError("Usage: add-note <title> <content>");
-                } else {
-                    notesManager.addNote(parts[0], parts[1]);
-                    view.displayResponse("Note added");
-                }
-                return;
-            }
+            // Note management is handled via AI function calling.
 
             if (normalized.equals("list-notes")) {
                 view.displayNotes(notesManager.getNotes());
                 return;
             }
 
-            if (normalized.startsWith("delete-note ")) {
-                try {
-                    int id = Integer.parseInt(input.substring(12).trim());
-                    boolean removed = notesManager.deleteNote(id);
-                    if (removed) {
-                        view.displayResponse("Note deleted");
-                    } else {
-                        view.displayError("Note not found");
-                    }
-                } catch (NumberFormatException e) {
-                    view.displayError("Usage: delete-note <id>");
-                }
-                return;
-            }
+            // delete-note command removed; handled by AI.
 
-            if (normalized.startsWith("summarize-note ")) {
-                try {
-                    int id = Integer.parseInt(input.substring(14).trim());
-                    notesManager.getNote(id).ifPresentOrElse(note -> {
-                        String sum = model.summarizeContent(note.getContent());
-                        view.displayResponse(sum);
-                    }, () -> view.displayError("Note not found"));
-                } catch (NumberFormatException e) {
-                    view.displayError("Usage: summarize-note <id>");
-                }
-                return;
-            }
-
-            if (normalized.startsWith("questions-note ")) {
-                try {
-                    int id = Integer.parseInt(input.substring(14).trim());
-                    notesManager.getNote(id).ifPresentOrElse(note -> {
-                        String q = model.generateQuestions(note.getContent());
-                        view.displayResponse(q);
-                    }, () -> view.displayError("Note not found"));
-                } catch (NumberFormatException e) {
-                    view.displayError("Usage: questions-note <id>");
-                }
-                return;
-            }
-
-            if (normalized.startsWith("search-notes ")) {
-                String query = input.substring(13).trim().toLowerCase();
-                var results = notesManager.getNotes().stream()
-                        .filter(n -> n.getTitle().toLowerCase().contains(query)
-                                || n.getContent().toLowerCase().contains(query))
-                        .toList();
-                if (results.isEmpty()) {
-                    view.displayError("No matching notes");
-                } else {
-                    view.displayNotes(results);
-                }
-                return;
-            }
+            // summarize-note, questions-note and search-notes commands removed; handled by AI.
 
             if (normalized.equals("show-history")) {
                 view.displayHistory(model.history.getMessages());
@@ -166,6 +105,16 @@ public class JeniusController {
                 return model.summarizeFile(arg);
             case "generateQuestions":
                 return model.generateQuestions(arg);
+            case "addNote":
+                return model.addNoteFromString(arg);
+            case "deleteNote":
+                return model.deleteNoteById(arg);
+            case "summarizeNote":
+                return model.summarizeNoteById(arg);
+            case "questionsNote":
+                return model.questionsNoteById(arg);
+            case "searchNotes":
+                return model.searchNotes(arg);
             default:
                 return null;
         }
