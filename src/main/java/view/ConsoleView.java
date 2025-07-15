@@ -3,6 +3,7 @@ package view;
 import java.util.List;
 import java.util.Scanner;
 import model.Message;
+import model.Note;
 
 public class ConsoleView {
     private final Scanner scanner;
@@ -42,6 +43,14 @@ public class ConsoleView {
             System.out.println(message.getRole() + ": " + message.getContent());
         }
         System.out.println("----------------------------\n");
+    }
+
+    public void displayNotes(List<Note> notes) {
+        System.out.println("\n--- Notes ---");
+        for (Note note : notes) {
+            System.out.println(note.getTitle() + ": " + note.getContent());
+        }
+        System.out.println("--------------\n");
     }
 }
 

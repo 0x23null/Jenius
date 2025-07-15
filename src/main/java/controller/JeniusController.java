@@ -10,12 +10,14 @@ import java.text.Normalizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import model.GenAIModel;
+import model.NotesManager;
 import view.ConsoleView;
 
 public class JeniusController {
 
     private final GenAIModel model;
     private final ConsoleView view;
+    private final NotesManager notesManager;
 
     public JeniusController() throws IOException {
         String apiKey = System.getenv("GENAI_API_KEY");
@@ -24,6 +26,7 @@ public class JeniusController {
         }
         this.model = new GenAIModel(apiKey);
         this.view = new ConsoleView();
+        this.notesManager = new NotesManager();
     }
 
     public void start() {
@@ -44,6 +47,34 @@ public class JeniusController {
     private void processCommand(String input) {
         try {
             String normalized = normalize(input).toLowerCase();
+
+            if (normalized.startsWith("add-note ")) {
+                String rest = input.substring(9);
+                String[] parts = rest.split(" ", 2);
+                if (parts.length < 2) {
+                    view.displayError("Usage: add-note <title> <content>");
+                } else {
+                    notesManager.addNote(parts[0], parts[1]);
+                    view.displayResponse("Note added");
+                }
+                return;
+            }
+
+            if (normalized.equals("list-notes")) {
+                view.displayNotes(notesManager.getNotes());
+                return;
+            }
+
+            if (normalized.startsWith("delete-note ")) {
+                String title = input.substring(12).trim();
+                boolean removed = notesManager.deleteNote(title);
+                if (removed) {
+                    view.displayResponse("Note deleted");
+                } else {
+                    view.displayError("Note not found");
+                }
+                return;
+            }
 
             if (normalized.equals("show-history")) {
                 view.displayHistory(model.history.getMessages());
