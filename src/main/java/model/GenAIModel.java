@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import model.NoteFunctions;
 
 public class GenAIModel {
 
@@ -78,11 +77,7 @@ public class GenAIModel {
             Tool tool = Tool.builder()
                     .functions(List.of(
                             GenAIModel.class.getMethod("summarizeFileStatic", String.class),
-                            GenAIModel.class.getMethod("generateQuestionsStatic", String.class),
-                            NoteFunctions.class.getMethod("addNote", String.class),
-                            NoteFunctions.class.getMethod("deleteNote", String.class),
-                            NoteFunctions.class.getMethod("listNotes"),
-                            NoteFunctions.class.getMethod("generateQuestionsFromNote", String.class)
+                            GenAIModel.class.getMethod("generateQuestionsStatic", String.class)
                     ))
                     .build();
 
