@@ -38,6 +38,14 @@ public class GenAIModel {
         return generateTaskResponse(prompt).text();
     }
 
+    /**
+     * Create a short title summarizing the given note content.
+     */
+    public String summarizeNoteTitle(String content) {
+        String prompt = "Create a concise title for the following note:" + System.lineSeparator() + content;
+        return generateTaskResponse(prompt).text();
+    }
+
     public String summarizeFile(String path) {
         try {
             String content = Files.readString(Path.of(path));
@@ -70,6 +78,16 @@ public class GenAIModel {
         return activeModel.generateQuestions(input);
     }
 
+    /**
+     * Static wrapper for summarizeNoteTitle that delegates to the active model instance.
+     */
+    public static String summarizeNoteTitleStatic(String content) {
+        if (activeModel == null) {
+            throw new IllegalStateException("No active GenAIModel instance");
+        }
+        return activeModel.summarizeNoteTitle(content);
+    }
+
     public GenerateContentResponse generateResponse(String currentPrompt) {
         try {
             String fullPrompt = history.getHistoryForModel() + currentPrompt;
@@ -77,7 +95,9 @@ public class GenAIModel {
             Tool tool = Tool.builder()
                     .functions(List.of(
                             GenAIModel.class.getMethod("summarizeFileStatic", String.class),
-                            GenAIModel.class.getMethod("generateQuestionsStatic", String.class)
+                            GenAIModel.class.getMethod("generateQuestionsStatic", String.class),
+                            controller.JeniusController.class.getMethod("addNoteStatic", String.class),
+                            controller.JeniusController.class.getMethod("deleteNoteStatic", String.class)
                     ))
                     .build();
 

@@ -10,12 +10,16 @@ import java.text.Normalizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import model.GenAIModel;
+import model.NotesManager;
 import view.ConsoleView;
 
 public class JeniusController {
 
+    private static JeniusController activeController;
+
     private final GenAIModel model;
     private final ConsoleView view;
+    private final NotesManager notesManager;
 
     public JeniusController() throws IOException {
         String apiKey = System.getenv("GENAI_API_KEY");
@@ -24,6 +28,31 @@ public class JeniusController {
         }
         this.model = new GenAIModel(apiKey);
         this.view = new ConsoleView();
+        this.notesManager = new NotesManager();
+        activeController = this;
+    }
+
+    /**
+     * Allow GenAIModel to add a note by automatically creating a title from content.
+     */
+    public static String addNoteStatic(String content) {
+        if (activeController == null) {
+            throw new IllegalStateException("No active controller");
+        }
+        String title = activeController.model.summarizeNoteTitle(content);
+        activeController.notesManager.addNote(title, content);
+        return "Note added: " + title;
+    }
+
+    /**
+     * Delete a note by title. Returns status message.
+     */
+    public static String deleteNoteStatic(String title) {
+        if (activeController == null) {
+            throw new IllegalStateException("No active controller");
+        }
+        boolean removed = activeController.notesManager.deleteNote(title);
+        return removed ? "Note deleted" : "Note not found";
     }
 
     public void start() {
@@ -44,6 +73,11 @@ public class JeniusController {
     private void processCommand(String input) {
         try {
             String normalized = normalize(input).toLowerCase();
+
+            if (normalized.equals("list-notes")) {
+                view.displayNotes(notesManager.getNotes());
+                return;
+            }
 
             if (normalized.equals("show-history")) {
                 view.displayHistory(model.history.getMessages());
@@ -90,6 +124,10 @@ public class JeniusController {
                 return model.summarizeFile(arg);
             case "generateQuestions":
                 return model.generateQuestions(arg);
+            case "addNote":
+                return addNoteStatic(arg);
+            case "deleteNote":
+                return deleteNoteStatic(arg);
             default:
                 return null;
         }

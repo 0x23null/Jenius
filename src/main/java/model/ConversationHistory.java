@@ -18,7 +18,8 @@ public class ConversationHistory {
 
         [TOOL USAGE]
         You have access to functions to summarize files and generate questions.
-        If a user's request can be fulfilled by a function (e.g., they mention a file path or ask to summarize), you MUST use that function.
+        You can also call `addNote` or `deleteNote` to manage user notes. When adding a note, pass the full content and the system will create a title.
+        If a user's request can be fulfilled by a function (e.g., they mention a file path, want to remember information, or ask to summarize), you MUST use that function.
         Prioritize using a function over giving a conversational answer for tasks that match a tool's capability.
         
         Below is the chat history:\n""";

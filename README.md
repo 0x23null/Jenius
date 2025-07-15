@@ -19,3 +19,10 @@ Run the application using Maven:
 ```bash
 mvn exec:java
 ```
+
+## Notes Management
+
+Interact naturally to manage your notes. Jenius uses AI function calling to add
+or delete notes based on your requests. When a note is added, the content is
+summarized to a short title automatically. Use the `list-notes` command at any
+time to display all saved notes.
