@@ -19,3 +19,11 @@ Run the application using Maven:
 ```bash
 mvn exec:java
 ```
+
+## Notes Management
+
+Use the following commands inside the application:
+
+- `add-note <title> <content>` – create a new note.
+- `list-notes` – display all notes.
+- `delete-note <title>` – remove a note by title.
