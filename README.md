@@ -22,8 +22,12 @@ mvn exec:java
 
 ## Notes Management
 
-Use the following commands inside the application:
+Notes are stored in `notes.json` in the project directory so they persist
+between runs. Use the following commands inside the application:
 
 - `add-note <title> <content>` – create a new note.
-- `list-notes` – display all notes.
-- `delete-note <title>` – remove a note by title.
+- `list-notes` – display all notes with their IDs.
+- `delete-note <id>` – remove a note by ID.
+- `summarize-note <id>` – summarize the note's content with AI.
+- `questions-note <id>` – generate questions from the note.
+- `search-notes <query>` – find notes that match the query.
