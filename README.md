@@ -19,7 +19,7 @@ Run the application using Maven:
 ```bash
 mvn exec:java
 ```
-Or the application using run.bat
+Or the application using ```run.bat``` file.
 
 ## Notes Management
 
