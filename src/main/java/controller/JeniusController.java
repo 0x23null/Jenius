@@ -10,6 +10,7 @@ import java.text.Normalizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import model.GenAIModel;
+import model.Note;
 import model.NotesManager;
 import view.ConsoleView;
 
@@ -66,12 +67,56 @@ public class JeniusController {
             }
 
             if (normalized.startsWith("delete-note ")) {
-                String title = input.substring(12).trim();
-                boolean removed = notesManager.deleteNote(title);
-                if (removed) {
-                    view.displayResponse("Note deleted");
+                try {
+                    int id = Integer.parseInt(input.substring(12).trim());
+                    boolean removed = notesManager.deleteNote(id);
+                    if (removed) {
+                        view.displayResponse("Note deleted");
+                    } else {
+                        view.displayError("Note not found");
+                    }
+                } catch (NumberFormatException e) {
+                    view.displayError("Usage: delete-note <id>");
+                }
+                return;
+            }
+
+            if (normalized.startsWith("summarize-note ")) {
+                try {
+                    int id = Integer.parseInt(input.substring(14).trim());
+                    notesManager.getNote(id).ifPresentOrElse(note -> {
+                        String sum = model.summarizeContent(note.getContent());
+                        view.displayResponse(sum);
+                    }, () -> view.displayError("Note not found"));
+                } catch (NumberFormatException e) {
+                    view.displayError("Usage: summarize-note <id>");
+                }
+                return;
+            }
+
+            if (normalized.startsWith("questions-note ")) {
+                try {
+                    int id = Integer.parseInt(input.substring(14).trim());
+                    notesManager.getNote(id).ifPresentOrElse(note -> {
+                        String q = model.generateQuestions(note.getContent());
+                        view.displayResponse(q);
+                    }, () -> view.displayError("Note not found"));
+                } catch (NumberFormatException e) {
+                    view.displayError("Usage: questions-note <id>");
+                }
+                return;
+            }
+
+            if (normalized.startsWith("search-notes ")) {
+                String query = input.substring(13).trim().toLowerCase();
+                var results = notesManager.getNotes().stream()
+                        .filter(n -> n.getTitle().toLowerCase().contains(query)
+                                || n.getContent().toLowerCase().contains(query))
+                        .toList();
+                if (results.isEmpty()) {
+                    view.displayError("No matching notes");
                 } else {
-                    view.displayError("Note not found");
+                    view.displayNotes(results);
                 }
                 return;
             }
