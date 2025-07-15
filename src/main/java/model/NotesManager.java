@@ -10,21 +10,11 @@ public class NotesManager {
         notes.add(new Note(title, content));
     }
 
-    public Note getNote(int index) {
-        if (index >= 0 && index < notes.size()) {
-            return notes.get(index);
-        }
-        return null;
-    }
-
     public List<Note> getNotes() {
         return new ArrayList<>(notes);
     }
 
-    public Note deleteNote(int index) {
-        if (index >= 0 && index < notes.size()) {
-            return notes.remove(index);
-        }
-        return null;
+    public boolean deleteNote(String title) {
+        return notes.removeIf(n -> n.getTitle().equalsIgnoreCase(title));
     }
 }
