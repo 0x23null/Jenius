@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import model.GenAIModel;
 import model.NotesManager;
+import model.NoteFunctions;
 import view.ConsoleView;
 
 public class JeniusController {
@@ -27,6 +28,7 @@ public class JeniusController {
         this.model = new GenAIModel(apiKey);
         this.view = new ConsoleView();
         this.notesManager = new NotesManager();
+        NoteFunctions.init(this.notesManager, this.model);
     }
 
     public void start() {
@@ -48,31 +50,8 @@ public class JeniusController {
         try {
             String normalized = normalize(input).toLowerCase();
 
-            if (normalized.startsWith("add-note ")) {
-                String rest = input.substring(9);
-                String[] parts = rest.split(" ", 2);
-                if (parts.length < 2) {
-                    view.displayError("Usage: add-note <title> <content>");
-                } else {
-                    notesManager.addNote(parts[0], parts[1]);
-                    view.displayResponse("Note added");
-                }
-                return;
-            }
-
             if (normalized.equals("list-notes")) {
                 view.displayNotes(notesManager.getNotes());
-                return;
-            }
-
-            if (normalized.startsWith("delete-note ")) {
-                String title = input.substring(12).trim();
-                boolean removed = notesManager.deleteNote(title);
-                if (removed) {
-                    view.displayResponse("Note deleted");
-                } else {
-                    view.displayError("Note not found");
-                }
                 return;
             }
 
@@ -121,6 +100,14 @@ public class JeniusController {
                 return model.summarizeFile(arg);
             case "generateQuestions":
                 return model.generateQuestions(arg);
+            case "addNote":
+                return NoteFunctions.addNote(arg);
+            case "deleteNote":
+                return NoteFunctions.deleteNote(arg);
+            case "listNotes":
+                return NoteFunctions.listNotes();
+            case "generateQuestionsFromNote":
+                return NoteFunctions.generateQuestionsFromNote(arg);
             default:
                 return null;
         }

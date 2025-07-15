@@ -47,8 +47,9 @@ public class ConsoleView {
 
     public void displayNotes(List<Note> notes) {
         System.out.println("\n--- Notes ---");
-        for (Note note : notes) {
-            System.out.println(note.getTitle() + ": " + note.getContent());
+        for (int i = 0; i < notes.size(); i++) {
+            Note note = notes.get(i);
+            System.out.println((i + 1) + ") " + note.getTitle() + ": " + note.getContent());
         }
         System.out.println("--------------\n");
     }
