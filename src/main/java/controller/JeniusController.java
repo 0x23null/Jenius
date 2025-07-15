@@ -49,10 +49,25 @@ public class JeniusController {
         try {
             String normalized = normalize(input).toLowerCase();
 
-            // Note management is handled via AI function calling.
+            // Note management commands
 
             if (normalized.equals("list-notes")) {
                 view.displayNotes(notesManager.getNotes());
+                return;
+            }
+
+            if (normalized.startsWith("add-note")) {
+                String args = input.substring(input.toLowerCase().indexOf("add-note") + 8).trim();
+                String[] parts = args.split("\\|", 2);
+                if (parts.length < 2) {
+                    view.displayError("Invalid add-note format. Use add-note \"title\"|\"content\"");
+                    return;
+                }
+                String title = parts[0].trim().replaceAll("^\"|\"$", "");
+                String content = parts[1].trim().replaceAll("^\"|\"$", "");
+                notesManager.addNote(title, content);
+                String result = "Note added";
+                view.displayResponse(result);
                 return;
             }
 
