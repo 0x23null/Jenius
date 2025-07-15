@@ -102,18 +102,25 @@ public class JeniusController {
     private String executeFunction(String name, String arg) {
         switch (name) {
             case "summarizeFile":
+            case "summarizeFileStatic":
                 return model.summarizeFile(arg);
             case "generateQuestions":
+            case "generateQuestionsStatic":
                 return model.generateQuestions(arg);
             case "addNote":
+            case "addNoteStatic":
                 return model.addNoteFromString(arg);
             case "deleteNote":
+            case "deleteNoteStatic":
                 return model.deleteNoteById(arg);
             case "summarizeNote":
+            case "summarizeNoteStatic":
                 return model.summarizeNoteById(arg);
             case "questionsNote":
+            case "questionsNoteStatic":
                 return model.questionsNoteById(arg);
             case "searchNotes":
+            case "searchNotesStatic":
                 return model.searchNotes(arg);
             default:
                 return null;
