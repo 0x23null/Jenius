@@ -8,10 +8,6 @@ Cần set biến api key trước khi chạy.
 set GENAI_API_KEY=your_api_key_here
 ```
 
-Hoặc dán thẳng API key vào class controller
-
-```String apiKey = "api_key";```
-
 Chạy chương trình bằng Maven:
 
 ```bash
