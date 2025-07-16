@@ -20,7 +20,7 @@ public class JeniusController {
     private final NotesManager notesManager;
 
     public JeniusController() throws IOException {
-        String apiKey = "AIzaSyACd4NG1JadaLr3nqXYFX0db6hYvqfJ8_c";
+        String apiKey = System.getenv("GENAI_API_KEY");
         if (apiKey == null || apiKey.isEmpty()) {
             throw new IllegalStateException("GENAI_API_KEY environment variable is not set");
         }
