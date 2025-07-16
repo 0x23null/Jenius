@@ -3,31 +3,29 @@ PRO192 AI Agent
 
 ## Setup
 
-Before running the application, set the environment variable `GENAI_API_KEY` with your API key:
-
-Cần set biến api key trước khi chạy
+Cần set biến api key trước khi chạy.
 ```bash
 set GENAI_API_KEY=your_api_key_here
 ```
 
 Hoặc thay thẳng API key vào class controller
 
-String apiKey = "paste_api_key";
+String apiKey = "api_key";
 
-Run the application using Maven:
+Chạy chương trình bằng Maven:
 
 ```bash
 mvn exec:java
 ```
-Or the application using ```run.bat``` file.
+Hoặc chạy bằng file ```run.bat```.
 
 ## Notes Management
 
-Notes are stored in `notes.json` in the project directory so they persist
-between runs. Use the following commands:
+Ghi chú được lưu trong tệp notes.json trong thư mục dự án, giúp chúng được giữ lại sau mỗi lần chạy.
+Sử dụng các lệnh sau:
 
-- `list-notes` – display all notes with their IDs.
-- `add-note "title"|"content"` – add a new note directly from the command line.
+- `list-notes` – hiển thị tất cả ghi chú cùng với ID của chúng.
+- `add-note "title"|"content"` – thêm ghi chú mới trực tiếp từ dòng lệnh.
 
-Other note actions like deleting or summarizing can still be requested in
-natural language and the assistant will call the appropriate functions for you.
+Các thao tác khác như xóa hoặc tóm tắt ghi chú vẫn có thể được yêu cầu bằng 
+ngôn ngữ tự nhiên — trợ lý sẽ tự động gọi đúng chức năng tương ứng cho bạn.
