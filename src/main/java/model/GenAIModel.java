@@ -34,7 +34,7 @@ public class GenAIModel {
     }
 
     public String summarizeContent(String content) {
-        String prompt = "Summarize the following content in 100-150 words:\n" + content;
+        String prompt = "Summarize the following content in 50-100 words:\n" + content;
         return generateTaskResponse(prompt).text();
     }
 
@@ -130,13 +130,6 @@ public class GenAIModel {
         return activeModel.generateQuestions(input);
     }
 
-    public static String addNoteStatic(String args) {
-        if (activeModel == null) {
-            throw new IllegalStateException("No active GenAIModel instance");
-        }
-        return activeModel.addNoteFromString(args);
-    }
-
     public static String deleteNoteStatic(String id) {
         if (activeModel == null) {
             throw new IllegalStateException("No active GenAIModel instance");
@@ -173,7 +166,6 @@ public class GenAIModel {
                     .functions(List.of(
                             GenAIModel.class.getMethod("summarizeFileStatic", String.class),
                             GenAIModel.class.getMethod("generateQuestionsStatic", String.class),
-                            GenAIModel.class.getMethod("addNoteStatic", String.class),
                             GenAIModel.class.getMethod("deleteNoteStatic", String.class),
                             GenAIModel.class.getMethod("summarizeNoteStatic", String.class),
                             GenAIModel.class.getMethod("questionsNoteStatic", String.class),

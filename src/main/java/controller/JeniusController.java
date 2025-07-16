@@ -10,7 +10,6 @@ import java.text.Normalizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import model.GenAIModel;
-import model.Note;
 import model.NotesManager;
 import view.ConsoleView;
 
@@ -21,7 +20,7 @@ public class JeniusController {
     private final NotesManager notesManager;
 
     public JeniusController() throws IOException {
-        String apiKey = System.getenv("GENAI_API_KEY");
+        String apiKey = "AIzaSyACd4NG1JadaLr3nqXYFX0db6hYvqfJ8_c";
         if (apiKey == null || apiKey.isEmpty()) {
             throw new IllegalStateException("GENAI_API_KEY environment variable is not set");
         }
@@ -70,10 +69,6 @@ public class JeniusController {
                 view.displayResponse(result);
                 return;
             }
-
-            // delete-note command removed; handled by AI.
-
-            // summarize-note, questions-note and search-notes commands removed; handled by AI.
 
             if (normalized.equals("show-history")) {
                 view.displayHistory(model.history.getMessages());
