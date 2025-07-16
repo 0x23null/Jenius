@@ -1,10 +1,14 @@
 package model;
 
 public class Note {
-    private final int id;
-    private final String title;
-    private final String content;
+    private int id;
+    private String title;
+    private String content;
 
+    public Note() {
+        
+    }
+    
     public Note(int id, String title, String content) {
         this.id = id;
         this.title = title;
